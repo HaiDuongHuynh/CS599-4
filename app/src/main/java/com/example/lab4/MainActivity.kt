@@ -1,5 +1,8 @@
 package com.example.lab4
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -174,7 +177,23 @@ fun LoginScreen(userList: List<User>, onLoginSuccess: (String) -> Unit, onCreate
             fontSize = 14.sp,
             modifier = Modifier
                 .align(Alignment.End)
-                .clickable { }
+                .clickable {
+                    val user = userList.find { it.username == email }
+                    if (user != null) {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:${user.username}") // username is email
+                            putExtra(Intent.EXTRA_SUBJECT, "Password Recovery")
+                            putExtra(Intent.EXTRA_TEXT, "Your password is: ${user.password}")
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: ActivityNotFoundException) {
+                            Toast.makeText(context, "No email app found", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(context, "Email not found", Toast.LENGTH_SHORT).show()
+                    }
+                }
                 .padding(top = 8.dp)
         )
 
@@ -317,6 +336,7 @@ fun CategoryScreen(username: String) {
 @Composable
 fun CreateAccountScreen(onRegister: (User) -> Unit,
                         onCancel: () -> Unit) {
+    val context = LocalContext.current
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var emails by remember { mutableStateOf("") }
@@ -348,7 +368,7 @@ fun CreateAccountScreen(onRegister: (User) -> Unit,
 
         OutlinedTextField(
             value = firstName,
-            onValueChange = {},
+            onValueChange = {firstName = it},
             label = { Text("First name*") },
             modifier = Modifier.constrainAs(fname) {
                 top.linkTo(title.bottom, margin = 16.dp)
@@ -359,7 +379,7 @@ fun CreateAccountScreen(onRegister: (User) -> Unit,
 
         OutlinedTextField(
             value = lastName,
-            onValueChange = {},
+            onValueChange = {lastName = it},
             label = { Text("Last name*") },
             modifier = Modifier.constrainAs(lname) {
                 top.linkTo(fname.bottom, margin = 8.dp)
@@ -370,7 +390,7 @@ fun CreateAccountScreen(onRegister: (User) -> Unit,
 
         OutlinedTextField(
             value = emails,
-            onValueChange = {},
+            onValueChange = { emails = it },
             label = { Text("Email address*") },
             modifier = Modifier.constrainAs(email) {
                 top.linkTo(lname.bottom, margin = 8.dp)
@@ -381,8 +401,9 @@ fun CreateAccountScreen(onRegister: (User) -> Unit,
 
         OutlinedTextField(
             value = passwords,
-            onValueChange = {},
+            onValueChange = { passwords = it },
             label = { Text("Password*") },
+            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.constrainAs(password) {
                 top.linkTo(email.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
@@ -393,6 +414,7 @@ fun CreateAccountScreen(onRegister: (User) -> Unit,
         Button(
             onClick = { if (firstName.isNotBlank() && lastName.isNotBlank() && emails.isNotBlank() && passwords.isNotBlank()) {
                 onRegister(User(firstName, lastName, emails, passwords))
+                Toast.makeText(context, "User registered succesfully!", Toast.LENGTH_SHORT).show()
             } },
             modifier = Modifier.constrainAs(button) {
                 top.linkTo(password.bottom, margin = 16.dp)
