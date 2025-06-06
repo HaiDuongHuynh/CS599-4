@@ -349,7 +349,7 @@ fun CreateAccountScreen(onRegister: (User) -> Unit,
         val (logo, title, fname, lname, email, password, button, button1) = createRefs()
 
         Image(
-            painter = painterResource(id = R.drawable.walmart_logo),
+            painter = painterResource(id = R.drawable.maharishi_icon),
             contentDescription = "Logo",
             modifier = Modifier
                 .size(100.dp)
